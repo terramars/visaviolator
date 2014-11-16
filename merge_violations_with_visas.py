@@ -1,7 +1,5 @@
 import os
 import sys
-import csv
-from collections import defaultdict, Counter
 import string
 from util import *
 
@@ -35,6 +33,8 @@ def write_violated_visas(fvisa, fout, matches):
       fout.writerow(line)
 
   print 'done, %d violators had visas'%len(violated_companies)
+
+
 
 if __name__ == '__main__':
   fviolator = sys.argv[1]
