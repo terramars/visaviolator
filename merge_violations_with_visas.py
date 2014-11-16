@@ -1,7 +1,9 @@
 import os
 import sys
 import csv
-import Levenshtein
+from collections import defaultdict, Counter
+import string
+from util import *
 
 def get_violator_names(fviolator):
   violator_names = set()
@@ -13,37 +15,22 @@ def get_violator_names(fviolator):
 
   for row in fviolator:
     trade_nm,legal_name = row[1:3]
-    violator_names.update([trade_nm, legal_name])
+    violator_names.update(map(normalize_name,[trade_nm, legal_name]))
 
   print 'found %d violator names'%len(violator_names)
   return violator_names
 
-def get_visa_companies(fvisa):
-  fvisa = csv.reader(open(fvisa))
-  fvisa.next()
-  visacomps = [i[7] for i in fvisa]
-  visacomps = set(visacomps)
-  return visacomps
-
-def find_similar_names(violator_names, visacomps):
-  matches = defaultdict(dict)
-  for c0 in visacomps:
-    for c1 in violator_names:
-      r = Levenshtein.ratio(c0,c1)
-      if r > 0.7:
-        matches[c0][c1] = r
-  return matches
-
-def write_violated_visas(fvisa, fout, violator_names):
+def write_violated_visas(fvisa, fout, matches):
   fvisa = csv.reader(open(fvisa))
   header = fvisa.next()
   fout = csv.writer(open(fout,'wb'))
   fout.writerow(header)
   print 'writing matching visas'
-  violated_companies = {}
 
+  violated_companies = {}
   for line in fvisa:
-    if line[7] in violator_names:
+    cname = normalize_name(line[7])
+    if len(cname)>1 and cname in matches:
       violated_companies[line[7]] = 1
       fout.writerow(line)
 
