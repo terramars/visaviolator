@@ -27,6 +27,12 @@ def count_company_visas(fname, idx = 7):
     company_counts[name]+=1
   return company_counts
 
+def get_stats_companies(fstats):
+  fstats = csv.reader(open(fstats))
+  fstats.next()
+  statcomps = set([i[0] for i in fstats])
+  return statcomps
+
 def get_visa_companies(fvisa):
   fvisa = csv.reader(open(fvisa))
   fvisa.next()
