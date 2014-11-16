@@ -1,6 +1,7 @@
 import csv
 from collections import defaultdict, Counter
 import Levenshtein
+import string
 import re
 
 whitespace_re = re.compile(r'\s')
@@ -33,7 +34,7 @@ def get_visa_companies(fvisa):
   visacomps = set(visacomps)
   return visacomps
 
-def build_name_index(names):
+def build_name_tree(names):
   idx = defaultdict(list)
   for n in names:
     f = n.split(' ',1)[0]
@@ -43,7 +44,7 @@ def build_name_index(names):
 def find_similar_names(violator_names, visacomps, thresh=0.7):
   matches = defaultdict(dict)
   i=0
-  vindex = build_name_index(violator_names)
+  vindex = build_name_tree(violator_names)
   for c0 in visacomps:
     i+=1
     if i%1000 == 0:
@@ -52,5 +53,31 @@ def find_similar_names(violator_names, visacomps, thresh=0.7):
     for c1 in vindex[c0f]:
       r = Levenshtein.ratio(c0,c1)
       if r > thresh:
-        matches[c0][c1] = [c0,r]
+        matches[c0][c1] = r
   return matches
+
+def build_name_index(matches):
+  idx = {}
+  n=0
+  for k,v in matches.iteritems():
+    if k in idx:
+      i = idx[k]
+    else:
+      i = n
+      n+=1
+    idx[k] = i
+    for c in v:
+      idx[c] = i
+  invidx = {}
+  for k,v in idx.iteritems():
+    if v not in invidx:
+      invidx[v] = k
+  finalidx = {}
+  for k,v in idx.iteritems():
+    finalidx[k] = invidx[v]
+  return finalidx
+
+
+
+
+
